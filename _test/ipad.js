@@ -2,6 +2,15 @@
 // Checks: no console errors, touch moves Astra / scores, and captures screenshots.
 const { chromium } = require('playwright');
 const path = require('path');
+const fs = require('fs');
+
+// page.screenshot() hangs on a canvas that redraws every rAF (software GL); capture via CDP instead.
+async function shot(page, file) {
+  const cdp = await page.context().newCDPSession(page);
+  const { data } = await cdp.send('Page.captureScreenshot', { format: 'png' });
+  fs.writeFileSync(file, Buffer.from(data, 'base64'));
+  await cdp.detach();
+}
 
 const ROOT = path.resolve(__dirname, '..');
 const url = (name) => 'file://' + path.resolve(ROOT, name === 'index' ? 'index.html' : name + '/index.html');
@@ -33,13 +42,16 @@ async function dragTouch(page, from, to, steps = 8) {
       const ctx = await browser.newContext({ viewport: vp, deviceScaleFactor: 2, isMobile: true, hasTouch: true, userAgent: SAFARI_UA });
       const page = await ctx.newPage();
       const errs = [];
-      page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') errs.push(m.type() + ': ' + m.text()); });
+      // AudioContext-autoplay warnings are a headless artifact (synthetic taps don't grant autoplay);
+      // on a real iPad the first touch unlocks audio. Ignore only that known-benign warning.
+      const benign = (t) => /AudioContext was not allowed to start/.test(t);
+      page.on('console', (m) => { if ((m.type() === 'error' || m.type() === 'warning') && !benign(m.text())) errs.push(m.type() + ': ' + m.text()); });
       page.on('pageerror', (e) => errs.push('pageerror: ' + e.message));
 
       await page.goto(url(name));
       await page.waitForTimeout(1600);
       const tag = `ipad-${name}-${orient}`;
-      await page.screenshot({ path: `shots/${tag}-start.png` });
+      await shot(page, `shots/${tag}-start.png`);
 
       let note = '';
       if (name === 'astra-rainbow-flight') {
@@ -60,7 +72,7 @@ async function dragTouch(page, from, to, steps = 8) {
         note = `moved=${moved} stars ${before.stars}->${after.stars} bloomed=${after.bloomed}`;
         if (!moved) { failures++; note += '  !! astra did not respond to touch'; }
         if (after.bloomed < 1) { failures++; note += '  !! tree did not bloom'; }
-        await page.screenshot({ path: `shots/${tag}-play.png` });
+        await shot(page, `shots/${tag}-play.png`);
       } else if (name === 'potion-math-lab') {
         await page.touchscreen.tap(vp.width / 2, vp.height / 2); // start
         await page.waitForTimeout(500);
@@ -75,7 +87,7 @@ async function dragTouch(page, from, to, steps = 8) {
         note = `started=${started} bloomed=${after.bloomed} level=${after.level.toFixed(2)}`;
         if (!started) { failures++; note += '  !! game did not start'; }
         if (after.bloomed < 1) { failures++; note += '  !! no tree bloomed'; }
-        await page.screenshot({ path: `shots/${tag}-play.png` });
+        await shot(page, `shots/${tag}-play.png`);
       }
 
       const ok = errs.length === 0;
