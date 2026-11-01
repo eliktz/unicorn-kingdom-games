@@ -29,7 +29,7 @@ async function dragTouch(page, from, to, steps = 8) {
   let failures = 0;
 
   for (const [orient, vp] of [['portrait', PORTRAIT], ['landscape', LANDSCAPE]]) {
-    for (const name of ['index', 'astra-rainbow-flight']) {
+    for (const name of ['index', 'astra-rainbow-flight', 'potion-math-lab']) {
       const ctx = await browser.newContext({ viewport: vp, deviceScaleFactor: 2, isMobile: true, hasTouch: true, userAgent: SAFARI_UA });
       const page = await ctx.newPage();
       const errs = [];
@@ -42,7 +42,7 @@ async function dragTouch(page, from, to, steps = 8) {
       await page.screenshot({ path: `shots/${tag}-start.png` });
 
       let note = '';
-      if (name !== 'index') {
+      if (name === 'astra-rainbow-flight') {
         await page.touchscreen.tap(vp.width / 2, vp.height / 2); // start
         await page.waitForTimeout(500);
         const before = await page.evaluate(() => ({ x: window.__game.astra.position.x, y: window.__game.astra.position.y, stars: window.__game.stars }));
@@ -60,6 +60,21 @@ async function dragTouch(page, from, to, steps = 8) {
         note = `moved=${moved} stars ${before.stars}->${after.stars} bloomed=${after.bloomed}`;
         if (!moved) { failures++; note += '  !! astra did not respond to touch'; }
         if (after.bloomed < 1) { failures++; note += '  !! tree did not bloom'; }
+        await page.screenshot({ path: `shots/${tag}-play.png` });
+      } else if (name === 'potion-math-lab') {
+        await page.touchscreen.tap(vp.width / 2, vp.height / 2); // start
+        await page.waitForTimeout(500);
+        const started = await page.evaluate(() => window.__game.playing);
+        // drag the correct ingredient bottle into the cauldron
+        const pts = await page.evaluate(() => ({ pot: window.__game.cauldronPos(), bottle: window.__game.correctBottlePos() }));
+        if (pts.bottle) await dragTouch(page, pts.bottle, pts.pot, 12);
+        await page.waitForTimeout(1600); // let the lock + next-problem settle
+        // solve a couple more directly to exercise the adaptive ramp + festival
+        for (let i = 0; i < 3; i++) { await page.evaluate(() => window.__game.forceSolve()); await page.waitForTimeout(1500); }
+        const after = await page.evaluate(() => ({ bloomed: window.__game.bloomed, level: window.__game.level }));
+        note = `started=${started} bloomed=${after.bloomed} level=${after.level.toFixed(2)}`;
+        if (!started) { failures++; note += '  !! game did not start'; }
+        if (after.bloomed < 1) { failures++; note += '  !! no tree bloomed'; }
         await page.screenshot({ path: `shots/${tag}-play.png` });
       }
 
