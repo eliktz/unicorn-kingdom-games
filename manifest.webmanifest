@@ -1,0 +1,18 @@
+{
+  "name": "ממלכת חדי הקרן",
+  "short_name": "חדי הקרן",
+  "description": "משחקים עדינים מממלכת חדי הקרן לילדים קטנים.",
+  "lang": "he",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#3a2766",
+  "theme_color": "#3a2766",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

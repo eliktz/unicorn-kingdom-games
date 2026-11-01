@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#3a2766">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="חדי הקרן">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="lib/fonts.css">
+<title>ממלכת חדי הקרן</title>
+<style>
+  html,body{margin:0;min-height:100%;min-height:100dvh;font-family:'Rubik','Arial Hebrew','Heebo',system-ui,'Trebuchet MS',sans-serif;color:#fff;background:radial-gradient(ellipse at 50% 120%,#ffc3e3 0%,#ff8fc8 20%,#7d5aa8 55%,#3a2766 100%) fixed;overscroll-behavior:none;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+  #stars{position:fixed;inset:0;pointer-events:none}
+  h1{text-align:center;font-size:min(10vw,60px);color:#fff;text-shadow:0 3px 0 #ff8fc8,0 0 30px rgba(201,169,245,.9);margin:30px 12px 4px}
+  .sub{text-align:center;font-size:40px;margin-bottom:18px}
+  .grid{display:flex;flex-wrap:wrap;gap:28px;justify-content:center;padding:10px 20px 44px;position:relative}
+  a.card{display:flex;flex-direction:column;align-items:center;width:280px;padding:26px 18px;border-radius:28px;background:rgba(70,45,110,.72);border:5px solid #e8e6f5;text-decoration:none;color:#fff;box-shadow:0 8px 26px rgba(58,39,102,.5),0 0 24px rgba(255,143,200,.25);transition:transform .15s}
+  a.card:hover,a.card:focus{transform:scale(1.06) rotate(-1deg)}
+  a.card:active{transform:scale(.96)}
+  a.card.soon{opacity:.72;filter:saturate(.7)}
+  .big{font-size:110px;line-height:1.05}
+  .name{font-size:28px;font-weight:bold;color:#ffe08a;margin-top:10px;text-align:center}
+  .how{font-size:34px;margin-top:8px}
+  .tag{font-size:22px;opacity:.85;margin-top:4px}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<h1>🦄 ממלכת חדי הקרן 🦄</h1>
+<div class="sub">✨ 🌈 🌸</div>
+<div class="grid">
+  <a class="card" href="astra-rainbow-flight/index.html">
+    <div class="big">🌈🦄</div>
+    <div class="name">מסע הקשת של אסטרה</div>
+    <div class="how">👆 ⭐ ☁️</div>
+  </a>
+  <a class="card soon" href="potion-math-lab/index.html">
+    <div class="big">🧪✨</div>
+    <div class="name">מעבדת השיקויים</div>
+    <div class="tag">בקרוב…</div>
+  </a>
+</div>
+<script>
+  // menu scrolls, but block pinch-zoom + double-tap-zoom so little fingers don't get lost
+  ['gesturestart', 'gesturechange', 'gestureend'].forEach((ev) => document.addEventListener(ev, (e) => e.preventDefault(), { passive: false }));
+  let lastTap = 0;
+  document.addEventListener('touchend', (e) => { const n = e.timeStamp || Date.now(); if (n - lastTap < 350) e.preventDefault(); lastTap = n; }, { passive: false });
+
+  const c = document.getElementById('stars'), g = c.getContext('2d');
+  const st = Array.from({ length: 150 }, () => ({ x: Math.random(), y: Math.random() * 0.85, r: Math.random() * 1.8 + 0.4, p: Math.random() * 6 }));
+  function draw(t) {
+    c.width = innerWidth; c.height = innerHeight;
+    st.forEach((s) => { g.globalAlpha = 0.4 + 0.5 * Math.sin(t / 500 + s.p); g.fillStyle = '#fff3fb'; g.beginPath(); g.arc(s.x * c.width, s.y * c.height, s.r, 0, 7); g.fill(); });
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+</script>
+</body>
+</html>
