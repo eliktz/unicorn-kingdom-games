@@ -7,7 +7,6 @@
   const { clamp, rand, mix, C } = UK;
   const sfx = UK.audio;
 
-  const { ctx, state } = UK.canvasSetup(onResize);
   const P = UK.Particles();
   const engine = UK.mathEngine();
 
@@ -22,6 +21,9 @@
   let held = null, offx = 0, offy = 0;
   const cauldron = { x: 0, y: 0, s: 60 };
   const hintPos = { x: 0, y: 0 };
+
+  // created last so onResize's synchronous first call sees the state above initialised
+  const { ctx, state } = UK.canvasSetup(onResize);
 
   const ui = UK.ui({
     title: 'מעבדת השיקויים של אסטרה',
